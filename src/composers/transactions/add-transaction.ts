@@ -97,10 +97,18 @@ export async function addTransaction(ctx: MyContext) {
         destinationAccountId: defaultDestinationAccount ? defaultDestinationAccount.id.toString() : ''
       })
 
-      return ctx.reply(
+      ctx.reply(
         formatTransaction(ctx, tr),
         formatTransactionKeyboard(ctx, tr)
       )
+
+      // Send another message after 1 minute
+      setTimeout(() => {
+        ctx.reply('Another message after 1 minute')
+      }, 60000) // 60000 milliseconds = 1 minute
+
+      return
+      
     }
 
     ctx.session.newTransaction = {
@@ -125,7 +133,7 @@ export async function addTransaction(ctx: MyContext) {
 
       return ctx.reply(ctx.i18n.t('transactions.add.noCategoriesYet'), {
         parse_mode: 'Markdown',
-        reply_markup:  keyboard
+        reply_markup: keyboard
       })
     }
 
@@ -137,7 +145,7 @@ export async function addTransaction(ctx: MyContext) {
 
     return ctx.reply(ctx.i18n.t('transactions.add.selectCategory', { amount: amount }), {
       parse_mode: 'Markdown',
-      reply_markup:  keyboard
+      reply_markup: keyboard
     })
   } catch (err: any) {
     log('Error: %O', err)
@@ -345,9 +353,9 @@ async function selectDestAccount(ctx: MyContext) {
 
     return ctx.editMessageText(
       ctx.i18n.t('transactions.add.selectDestAccount', { amount: tr.amount }), {
-        parse_mode: 'Markdown',
-        reply_markup: accountsKeyboard
-      }
+      parse_mode: 'Markdown',
+      reply_markup: accountsKeyboard
+    }
     )
 
   } catch (err) {
@@ -386,9 +394,9 @@ async function startCreatingTransferTransaction(ctx: MyContext) {
 
     return ctx.editMessageText(
       ctx.i18n.t('transactions.add.selectSourceAccount', { amount: amount }), {
-        parse_mode: 'Markdown',
-        reply_markup: accountsKeyboard
-      }
+      parse_mode: 'Markdown',
+      reply_markup: accountsKeyboard
+    }
     )
 
   } catch (err) {
@@ -406,13 +414,13 @@ async function createTransaction(ctx: MyContext) {
     log('ctx.session: %O', ctx.session)
 
     let transactionType: TransactionTypeProperty
-    const sourceAccountType = ctx.session.newTransaction.sourceAccount!.type 
+    const sourceAccountType = ctx.session.newTransaction.sourceAccount!.type
     const destAccountData = (await firefly(ctx.session.userSettings).Accounts.getAccount(destAccountId)).data.data
     log('destAccountData: %O', destAccountData)
 
     if (sourceAccountType === 'liabilities' || sourceAccountType === 'revenue') {
       transactionType = TransactionTypeProperty.Deposit
-    } 
+    }
     else if (sourceAccountType === 'asset' || destAccountData.attributes.type === 'asset') {
       transactionType = TransactionTypeProperty.Transfer
     }
@@ -472,9 +480,9 @@ async function startCreatingDepositTransaction(ctx: MyContext) {
 
     return ctx.editMessageText(
       ctx.i18n.t('transactions.add.selectRevenueAccount', { amount: amount }), {
-        parse_mode: 'Markdown',
-        reply_markup: accountsKeyboard
-      }
+      parse_mode: 'Markdown',
+      reply_markup: accountsKeyboard
+    }
     )
 
   } catch (err) {
