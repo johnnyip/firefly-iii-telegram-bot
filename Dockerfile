@@ -1,34 +1,27 @@
-##################################################
-FROM node:18-alpine3.16 as deps
-
+# Use official Node.js 18 as the base image
+FROM node:18-alpine3.16 AS base
 WORKDIR /home/node/app
 
-COPY package.json .
-RUN node -e "console.log(require('./package.json').version)" > ./version.txt
+# Install production dependencies
+FROM base AS production
+COPY package*.json ./
+RUN npm ci --only=production
 
-COPY *.json .npmrc ./
-RUN npm install --omit=dev --omit=optional \
-    && mv ./node_modules ./node_modules_prod \
-    && npm install --omit=optional
-
-##################################################
-FROM deps as build
-
+# Use official Node.js 18 as the base image for the build stage
+FROM node:18-alpine3.16 AS build
 WORKDIR /home/node/app
+COPY . .
+RUN npm ci && npm run build
 
-RUN ls -al
-COPY --from=deps /home/node/app/node_modules ./node_modules
-COPY *.json ./
-COPY src src
-
-RUN npm run build
-
-##################################################
-FROM node:18-alpine3.16 as prod-image
-
+# Use the base image
+FROM base AS release
 WORKDIR /home/node/app
-
+# Copy production dependencies
+COPY --from=production /home/node/app/node_modules ./node_modules
+# Copy built source code
 COPY --from=build /home/node/app/dist ./dist
-COPY --from=build /home/node/app/node_modules_prod node_modules
+# Copy locales
+COPY --from=build /home/node/app/dist/locales ./dist/locales
 
-ENTRYPOINT ["node", "dist/index.js"]
+# Set the command to start the application
+CMD ["node", "dist/index.js"]
