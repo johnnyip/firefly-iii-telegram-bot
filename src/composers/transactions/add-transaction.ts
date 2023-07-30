@@ -104,11 +104,11 @@ export async function addTransaction(ctx: MyContext) {
 
       // Send another message after 1 minute
       setTimeout(() => {
-        ctx.reply('Another message after 1 minute')
+        ctx.reply('Come back if you have new transaction!')
       }, 60000) // 60000 milliseconds = 1 minute
 
       return
-      
+
     }
 
     ctx.session.newTransaction = {
