@@ -29,6 +29,7 @@ export default function firefly(userSettings : { fireflyApiUrl: string, fireflyA
     Categories: api.CategoriesApiFactory(configuration),
     Insight: api.InsightApiFactory(configuration),
     Transactions: api.TransactionsApiFactory(configuration),
+    Automation: api.RulesApiFactory(configuration),
   }
 }
 

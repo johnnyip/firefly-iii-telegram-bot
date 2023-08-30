@@ -11,6 +11,7 @@ import { command } from './lib/constants'
 import { requireSettings, cleanup } from './lib/middlewares'
 import { createMainKeyboard, generateWelcomeMessage } from './composers/helpers'
 
+import firefly from './lib/firefly'
 import settings from './composers/settings'
 import addTransaction, { addTransaction as textHandler } from './composers/transactions/add-transaction'
 import editTransaction from './composers/transactions/edit-transaction'
@@ -54,6 +55,7 @@ bot.use(categories)
 
 bot.command(command.START, startHandler)
 bot.command(command.HELP, helpHandler)
+bot.command(command.AUTOMATIONS, automationHandler)
 bot.on('message:text', textHandler)
 
 bot.start()
@@ -89,10 +91,43 @@ function helpHandler(ctx: MyContext) {
   })
 }
 
+async function automationHandler(ctx: MyContext) {
+  const log = rootLog.extend('automation Handler')
+  log('help: %O', ctx.message)
+
+  let responseText = ""
+
+  const userSettings = ctx.session.userSettings
+  const listRules = (await firefly(userSettings).Automation.listRule()).data.data
+  for (const rule of listRules) {
+    log(rule.attributes.title)
+    responseText += "*" + rule.attributes.title + "*\n"
+
+    for (const trigger of rule.attributes.triggers) {
+      if (trigger.type === "description_contains") {
+        log(trigger.value)
+        responseText += "- " + trigger.value + "\n"
+      }
+    }
+    responseText += "\n"
+  }
+
+  log(responseText)
+
+
+  return ctx.reply(responseText, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      keyboard: createMainKeyboard(ctx).build(),
+      resize_keyboard: true
+    }
+  })
+}
+
 function setBotCommands(ctx: MyContext) {
   const log = rootLog.extend('setBotCommands')
   log('Setting bot commands...')
-  const myCommands: {command: string, description: string}[] = []
+  const myCommands: { command: string, description: string }[] = []
 
   for (const val of Object.values(command)) {
     myCommands.push({

@@ -1,6 +1,7 @@
 commands:
   start: Start (greetings message)
   settings: Settings
+  automations: Automations
   help: Help
 
 labels:
