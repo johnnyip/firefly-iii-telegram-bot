@@ -2,6 +2,7 @@ commands:
   start: Start (greetings message)
   settings: Settings
   automations: Automations
+  recurrences: Recurrences
   help: Help
 
 labels:

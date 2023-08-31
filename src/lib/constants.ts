@@ -3,4 +3,5 @@ export const command = {
   SETTINGS: 'settings',
   HELP:     'help',
   AUTOMATIONS: 'automations',
+  RECURRENCES: 'recurrences'
 }

@@ -1,4 +1,5 @@
 import debug from 'debug'
+import axios from 'axios';
 import * as dotenv from 'dotenv';
 import { Bot, GrammyError, HttpError, session } from 'grammy'
 import { FileAdapter } from '@grammyjs/storage-file';
@@ -56,6 +57,7 @@ bot.use(categories)
 bot.command(command.START, startHandler)
 bot.command(command.HELP, helpHandler)
 bot.command(command.AUTOMATIONS, automationHandler)
+bot.command(command.RECURRENCES, recurrenceHandler)
 bot.on('message:text', textHandler)
 
 bot.start()
@@ -112,8 +114,35 @@ async function automationHandler(ctx: MyContext) {
     responseText += "\n"
   }
 
-  log(responseText)
+  return ctx.reply(responseText, {
+    parse_mode: 'Markdown',
+    reply_markup: {
+      keyboard: createMainKeyboard(ctx).build(),
+      resize_keyboard: true
+    }
+  })
+}
 
+async function recurrenceHandler(ctx: MyContext) {
+  // Call api and return the response message
+  const log = rootLog.extend('recurrence Handler')
+  log('help: %O', ctx.message)
+
+  let responseText = ""
+
+  const userSettings = ctx.session.userSettings
+  const url = userSettings.fireflyApiUrl + "/api/v1/cron/" + config.cliToken
+
+  //send api request using axios
+  const response = await axios.get(url)
+  const data = response.data
+
+  responseText += "*Recurring Transactions:*\n> "
+  responseText += data.recurring_transactions.message
+  responseText += "\n\n*Auto Budget:*\n> "
+  responseText += data.auto_budgets.message
+  responseText += "\n\n*Bill Warnings:*\n> "
+  responseText += data.bill_warnings.message
 
   return ctx.reply(responseText, {
     parse_mode: 'Markdown',
@@ -122,6 +151,7 @@ async function automationHandler(ctx: MyContext) {
       resize_keyboard: true
     }
   })
+
 }
 
 function setBotCommands(ctx: MyContext) {
