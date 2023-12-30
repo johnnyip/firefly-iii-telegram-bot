@@ -42,6 +42,7 @@ bot.callbackQuery(mapper.selectDestAccount.regex(), createTransaction)
 export default bot
 
 export async function addTransaction(ctx: MyContext) {
+  console.log(ctx.message)
   const log = rootLog.extend('addTransaction')
   log('Entered text handler')
   try {
@@ -103,9 +104,9 @@ export async function addTransaction(ctx: MyContext) {
       )
 
       // Send another message after 1 minute
-      setTimeout(() => {
-        ctx.reply('Come back if you have new transaction!')
-      }, 60000) // 60000 milliseconds = 1 minute
+      // setTimeout(() => {
+      //   ctx.reply('Come back if you have new transaction!')
+      // }, 60000) // 60000 milliseconds = 1 minute
 
       return
 
